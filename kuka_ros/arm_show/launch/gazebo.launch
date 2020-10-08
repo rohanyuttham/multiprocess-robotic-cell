@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+                <arg name="world_name" value="$(find arm_show)/worlds/empty.world"/>
+		<arg name="paused" value="false"/>
+        	<arg name="use_sim_time" value="true"/>
+		<arg name="gui" value="true"/>
+		<arg name="recording" value="false"/>
+		<arg name="debug" value="false"/>
+	</include>
+
+	<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find arm_description)/urdf/arm.urdf.xacro'"/>
+
+	<node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+   args="-urdf -param robot_description -model kuka_arm" />
+
+    <node pkg="tf" type="static_transform_publisher" name="world_broadcaster" args = "0 0 0 0 0 0 world base_link 10" />
+    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args = "0 0 0 0 0 0 world map 10" />
+    <rosparam file="$(find arm_moveit_config)/config/controller.yaml" command="load"/>
+    <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
+</launch>
